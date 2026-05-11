@@ -1,0 +1,18 @@
+{
+  "id": "focus-timer-app",
+  "name": "专注计时",
+  "short_name": "专注",
+  "description": "极简的渐进式专注计时工具",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1D9E75",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

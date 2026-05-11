@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1D9E75">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="专注">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>专注计时</title>
+  <style>
+    /* 样式部分保持不变，确保完美的 UI 呈现 */
+    :root {
+      --p:  #1D9E75;  --p-bg: #E1F5EE;  --p-dk: #0F6E56;
+      --w:  #BA7517;  --w-bg: #FAEEDA;
+      --d:  #D85A30;  --d-bg: #FAECE7;
+      --t1: #111;  --t2: #555;  --t3: #999;
+      --bg: #fff;  --bg2: #f6f5f0;  --bg3: #eceae4;
+      --br: rgba(0,0,0,.09);  --br2: rgba(0,0,0,.16);
+      --r: 11px;  --r2: 16px;
+      --st: env(safe-area-inset-top,0px);
+      --sb: env(safe-area-inset-bottom,0px);
+    }
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --t1:#f0f0ee; --t2:#aaa; --t3:#666;
+        --bg:#111; --bg2:#1e1e1e; --bg3:#2b2b2b;
+        --br:rgba(255,255,255,.09); --br2:rgba(255,255,255,.16);
+        --p-bg:rgba(29,158,117,.15); --w-bg:rgba(186,117,23,.15); --d-bg:rgba(216,90,48,.15);
+      }
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html{height:100%;-webkit-text-size-adjust:100%}
+    body{min-height:100%;background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;font-size:15px;line-height:1.5;padding:max(1.25rem,calc(.75rem + var(--st))) 1rem max(2rem,calc(1.5rem + var(--sb)));}
+    .screen{display:none;max-width:430px;margin:0 auto} .screen.on{display:block}
+    .lbl{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;margin:1.25rem 0 8px} .lbl:first-child{margin-top:0}
+    .nb{background:var(--p-bg);border:.5px solid var(--p);border-radius:var(--r);padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--p-dk)}
+    .nb button{margin-left:auto;background:var(--p);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0}
+    .presets{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .preset{background:var(--bg2);border:.5px solid var(--br);border-radius:var(--r);padding:11px 13px;cursor:pointer;text-align:left;-webkit-appearance:none} .preset:active{background:var(--bg3)}
+    .preset .pn{font-size:13px;font-weight:500} .preset .pt{font-size:11px;color:var(--t3);margin-top:2px}
+    .irow{display:flex;gap:8px} input[type=text],input[type=number]{background:var(--bg2);border:.5px solid var(--br);border-radius:var(--r);padding:0 13px;height:44px;font-size:15px;color:var(--t1);outline:none;-webkit-appearance:none;transition:border .15s} input:focus{border-color:var(--p)} input[type=text]{flex:1} input[type=number]{width:74px;text-align:center}
+    .vbtn{display:flex;align-items:center;gap:6px;background:var(--bg2);border:.5px solid var(--br);border-radius:var(--r);padding:9px 14px;font-size:13px;color:var(--t2);cursor:pointer;margin-top:8px;-webkit-appearance:none} .vbtn.on{background:var(--d-bg);border-color:var(--d);color:var(--d)}
+    .vhint{font-size:12px;color:var(--t3);display:block;margin-top:5px}
+    .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} .g2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .opt{border:.5px solid var(--br);border-radius:var(--r);padding:10px 8px;cursor:pointer;background:var(--bg2);-webkit-appearance:none;width:100%} .opt.on{border:1.5px solid var(--p);background:var(--p-bg)}
+    .opt-c{text-align:center} .opt-c .ot{font-size:17px;font-weight:500} .opt-c .od{font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4}
+    .opt.on .ot,.opt.on .od,.opt.on .otl,.opt.on .odl{color:var(--p-dk)}
+    .opt-l{text-align:left;padding:12px} .opt-l .oi{font-size:22px;margin-bottom:4px} .opt-l .otl{font-size:13px;font-weight:500} .opt-l .odl{font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4}
+    .tlw{padding:6px 0 22px;position:relative} .tlb{height:3px;background:var(--br2);border-radius:2px;position:relative} .tld{width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--p);position:absolute;top:50%;transform:translate(-50%,-50%)} .tll{position:absolute;font-size:10px;color:var(--t3);top:9px;transform:translateX(-50%);white-space:nowrap}
+    .sbtn{display:block;width:100%;background:var(--p);color:#fff;border:none;border-radius:var(--r);padding:14px;font-size:16px;font-weight:600;cursor:pointer;margin-top:1.5rem;opacity:.35;transition:opacity .2s;-webkit-appearance:none} .sbtn.on{opacity:1} .sbtn:active{opacity:.8}
+    .gcrd{background:var(--bg2);border:.5px solid var(--br);border-radius:var(--r2);padding:12px 16px;margin-bottom:1.25rem} .gcrd .gl{font-size:11px;color:var(--t3);margin-bottom:3px} .gcrd .gt{font-size:16px;font-weight:500}
+    .rw{display:flex;justify-content:center;margin-bottom:1rem} .rc{position:relative;width:200px;height:200px} .rs{transform:rotate(-90deg)} .rbg{fill:none;stroke:var(--br);stroke-width:10} .rfg{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .5s} .rt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center} .rn{font-size:38px;font-weight:300;letter-spacing:-1px;font-variant-numeric:tabular-nums} .rp{font-size:12px;color:var(--t3);margin-top:5px}
+    .pt{position:relative;height:36px;margin-bottom:.75rem} .pb{position:absolute;top:50%;transform:translateY(-50%);left:0;right:0;height:4px;background:var(--br2);border-radius:2px} .pf{height:100%;background:var(--p);border-radius:2px;transition:width .9s linear} .pd{width:14px;height:14px;border-radius:50%;background:var(--bg);border:2.5px solid var(--br2);position:absolute;top:50%;transform:translate(-50%,-50%);transition:all .3s} .pd.fired{background:var(--p);border-color:var(--p)} .pd.nxt{border-color:var(--w)} .pl{position:absolute;font-size:10px;color:var(--t3);top:14px;transform:translateX(-50%);white-space:nowrap}
+    .ab{min-height:44px;margin-bottom:.75rem} .al{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:var(--r);font-size:13px;line-height:1.4;margin-bottom:6px;animation:pop .25s ease} .al.info{background:var(--p-bg);color:var(--p-dk)} .al.warn{background:var(--w-bg);color:var(--w)} .al.end{background:var(--d-bg);color:var(--d)} .ai{flex-shrink:0;margin-top:1px} @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+    .cr{display:flex;gap:8px} .cb{flex:1;padding:12px;border:.5px solid var(--br2);border-radius:var(--r);background:transparent;cursor:pointer;font-size:14px;color:var(--t1);display:flex;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none} .cb:active{background:var(--bg2)} .cb.red{color:var(--d);border-color:rgba(216,90,48,.3)}
+    .dc{border:.5px solid var(--br);border-radius:var(--r2);padding:1.5rem 1.25rem;text-align:center;margin-top:.5rem} .dc.ex{background:var(--d-bg);border-color:rgba(216,90,48,.25)} .di{font-size:44px;margin-bottom:.75rem} .dtt{font-size:20px;font-weight:500;margin-bottom:.5rem} .dc.ex .dtt{color:var(--d)} .ds{font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:1.25rem} .dc.ex .ds{color:var(--d);opacity:.85} .sts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem} .st{background:var(--bg2);border-radius:var(--r);padding:10px 8px;text-align:center} .sn{font-size:20px;font-weight:500} .sl{font-size:11px;color:var(--t3);margin-top:2px} .das{display:flex;flex-direction:column;gap:8px} .bm{width:100%;padding:13px;background:var(--p);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:500;cursor:pointer;-webkit-appearance:none} .dc.ex .bm{background:var(--d)} .bs{width:100%;padding:12px;background:transparent;color:var(--t1);border:.5px solid var(--br2);border-radius:var(--r);font-size:15px;cursor:pointer;-webkit-appearance:none}
+  </style>
+</head>
+<body>
+
+<div class="screen on" id="s0">
+  <div class="nb" id="nb" style="display:none">
+    <span>开启通知，切到其他应用时也能收到提醒</span>
+    <button onclick="reqN()">开启</button>
+  </div>
+  <p class="lbl">快速开始</p>
+  <div class="presets">
+    <button class="preset" onclick="pick('和妈妈微信视频',30)"><div class="pn">📹 微信视频</div><div class="pt">30 分钟</div></button>
+    <button class="preset" onclick="pick('看研报/K线',45)"><div class="pn">📈 看研报/K线</div><div class="pt">45 分钟</div></button>
+    <button class="preset" onclick="pick('微信读书',60)"><div class="pn">📖 微信读书</div><div class="pt">60 分钟</div></button>
+    <button class="preset" onclick="pick('整理 Obsidian',30)"><div class="pn">📝 整理笔记</div><div class="pt">30 分钟</div></button>
+  </div>
+  <p class="lbl">自定义目标</p>
+  <div class="irow">
+    <input type="text" id="gi" placeholder="本次使用手机的目的…" oninput="chk()">
+    <input type="number" id="mi" placeholder="分钟" min="1" max="300" oninput="chk()">
+  </div>
+  <button class="vbtn" id="vb" onclick="tv()">🎙 语音输入</button>
+  <span class="vhint" id="vh">说「买早餐 5分钟」</span>
+  <p class="lbl">提醒次数</p>
+  <div class="g3">
+    <button class="opt opt-c on" id="o1" onclick="sr(1)"><div class="ot">1次</div><div class="od">只在结束时</div></button>
+    <button class="opt opt-c" id="o2" onclick="sr(2)"><div class="ot">2次</div><div class="od">50% + 结束</div></button>
+    <button class="opt opt-c" id="o3" onclick="sr(3)"><div class="ot">3次</div><div class="od">33%·67%·结束</div></button>
+  </div>
+  <div class="tlw"><div class="tlb" id="tlb"></div></div>
+  <p class="lbl">时间到之后</p>
+  <div class="g2">
+    <button class="opt opt-l on" id="er" onclick="se('rest')"><div class="oi">☕</div><div class="otl">休息提醒</div><div class="odl">提示放下手机</div></button>
+    <button class="opt opt-l" id="ee" onclick="se('exit')"><div class="oi">🚪</div><div class="otl">强制退出</div><div class="odl">强提醒退出应用</div></button>
+  </div>
+  <button class="sbtn" id="sb" onclick="go()">开始专注</button>
+</div>
+
+<div class="screen" id="s1">
+  <div class="gcrd"><div class="gl">本次目的</div><div class="gt" id="tg">—</div></div>
+  <div class="rw">
+    <div class="rc">
+      <svg class="rs" viewBox="0 0 200 200" width="200" height="200">
+        <circle class="rbg" cx="100" cy="100" r="88"/>
+        <circle class="rfg" id="rr" cx="100" cy="100" r="88" stroke-dasharray="552.9" stroke-dashoffset="0" stroke="#1D9E75"/>
+      </svg>
+      <div class="rt"><div class="rn" id="rn">—</div><div class="rp" id="rph">专注中</div></div>
+    </div>
+  </div>
+  <div class="pt"><div class="pb"><div class="pf" id="pf" style="width:0%"></div></div></div>
+  <div class="ab" id="ab"></div>
+  <div class="cr">
+    <button class="cb" id="pbtn" onclick="tp()">⏸ 暂停</button>
+    <button class="cb red" onclick="ee2()">✕ 结束</button>
+  </div>
+</div>
+
+<div class="screen" id="s2">
+  <div class="dc" id="dc"></div>
+</div>
+
+<script>
+let goal='', tot=0, rem=0, paused=false, iv=null;
+let rc=1, ea='rest';
+let fired=[], ntids=[];
+let t0=0, pausedMs=0, pauseStart=0;
+const CIRC=552.9;
+
+// 全局音频上下文，用于解锁 iOS 静音限制
+let audioCtx = null;
+
+window.addEventListener('DOMContentLoaded',()=>{
+  if('Notification' in window && Notification.permission==='default') document.getElementById('nb').style.display='flex';
+  rtl();
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+});
+
+async function reqN(){
+  await Notification.requestPermission();
+  document.getElementById('nb').style.display='none';
+}
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // 播放一小段无声音频，强行解锁 iOS 音频权限
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0;
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(0); osc.stop(audioCtx.currentTime + 0.1);
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function chk(){
+  const val = parseInt(document.getElementById('mi').value);
+  const ok=document.getElementById('gi').value.trim() && val > 0 && val <= 300;
+  document.getElementById('sb').classList.toggle('on',ok);
+}
+function pick(g,m){ document.getElementById('gi').value=g; document.getElementById('mi').value=m; chk(); }
+function sr(n){ rc=n; [1,2,3].forEach(i=>document.getElementById('o'+i).classList.toggle('on',i===n)); rtl(); }
+function se(v){ ea=v; document.getElementById('er').classList.toggle('on',v==='rest'); document.getElementById('ee').classList.toggle('on',v==='exit'); }
+function pts(){ return rc===1?[100]:rc===2?[50,100]:[33,67,100]; }
+
+function rtl(){
+  const b=document.getElementById('tlb'); b.innerHTML='';
+  pts().forEach(p=>{
+    const d=mk('div','tld'); d.style.left=p+'%';
+    const l=mk('div','tll'); l.style.left=p+'%'; l.textContent=p===100?'结束':p+'%';
+    b.appendChild(d); b.appendChild(l);
+  });
+}
+
+function go(){
+  goal=document.getElementById('gi').value.trim(); tot=parseInt(document.getElementById('mi').value)*60;
+  if(!goal||!tot) return;
+  
+  initAudio(); // 用户点击按钮时立即解锁音频
+  
+  rem=tot; paused=false; fired=pts().map(()=>false); ntids=[]; t0=Date.now(); pausedMs=0;
+  document.getElementById('tg').textContent=goal; document.getElementById('ab').innerHTML='';
+  bpd(); show('s1'); aa('info','🚀','开始专注：'+goal); wakeOn(); schn();
+  tick(); iv=setInterval(tick,500);
+}
+
+function tick(){
+  if(paused) return;
+  rem=Math.max(0,tot-Math.floor((Date.now()-t0-pausedMs)/1000));
+  const pct=Math.round((tot-rem)/tot*100);
+  const ratio=rem/tot; const clr=ratio>.5?'#1D9E75':ratio>.2?'#BA7517':'#D85A30';
+  document.getElementById('rr').style.strokeDashoffset=String(CIRC*(1-ratio));
+  document.getElementById('rr').style.stroke=clr;
+  document.getElementById('rn').textContent=fmt(rem);
+  document.getElementById('pf').style.width=Math.min(pct,100)+'%';
+
+  pts().forEach((p,i)=>{
+    if(!fired[i]&&pct>=p){
+      fired[i]=true;
+      const d=document.getElementById('pd'+i); if(d){d.classList.add('fired');d.classList.remove('nxt');}
+      const nd=document.getElementById('pd'+(i+1)); if(nd&&!fired[i+1]) nd.classList.add('nxt');
+      ha(p,i);
+    }
+  });
+}
+
+function ha(pct,idx){
+  if(pct===100){
+    clearInterval(iv); iv=null; wakeOff(); cxn(); vib([200,80,200,80,300]); beep(660,.4,true); sdone(); return;
+  }
+  const left=fmt(Math.round(tot*(1-pct/100)));
+  aa(idx===0?'info':'warn', idx===0?'⏱':'⚠️', '已过'+pct+'%，还剩 '+left+'，记住目标：'+goal);
+  vib([80,40,80]); beep(idx===0?440:520,.15);
+}
+
+function bpd(){
+  const trk=document.getElementById('s1').querySelector('.pt');
+  trk.querySelectorAll('.pd,.pl').forEach(e=>e.remove());
+  pts().forEach((p,i)=>{
+    const d=mk('div','pd'); d.id='pd'+i; d.style.left=p+'%'; if(i===0) d.classList.add('nxt');
+    const l=mk('div','pl'); l.style.left=p+'%'; l.textContent=p===100?'结束':p+'%';
+    trk.appendChild(d); trk.appendChild(l);
+  });
+}
+
+function tp(){
+  paused=!paused;
+  if(paused){
+    pauseStart=Date.now(); cxn(); wakeOff(); document.getElementById('pbtn').textContent='▶ 继续'; document.getElementById('rph').textContent='已暂停';
+  } else {
+    pausedMs+=Date.now()-pauseStart; schn(); wakeOn(); document.getElementById('pbtn').textContent='⏸ 暂停'; document.getElementById('rph').textContent='专注中';
+  }
+}
+
+function ee2(){
+  cxn(); clearInterval(iv); iv=null; wakeOff(); const done=Math.round((tot-rem)/60);
+  dcard(`<div class="di">✅</div><div class="dtt">提前完成</div><div class="ds">完成了「${goal}」，共专注 ${done} 分钟</div><div class="das" style="margin-top:1rem"><button class="bm" onclick="rst()">返回首页</button></div>`, false);
+  show('s2');
+}
+
+function sdone(){
+  const mins=Math.round(tot/60), fc=fired.filter(Boolean).length;
+  if(ea==='exit'){
+    dcard(`<div class="di">🚪</div><div class="dtt">时间到，请退出应用</div><div class="ds">你为「${goal}」设定的 ${mins} 分钟已用完<br>现在请退出当前使用的应用</div><div class="das"><button class="bm" onclick="rst()">已退出，返回首页</button><button class="bs" onclick="ext(5)">再给我 5 分钟</button></div>`, true);
+  } else {
+    dcard(`<div class="di">☕</div><div class="dtt">完成了！</div><div class="ds">你专注了 ${mins} 分钟完成了「${goal}」<br>放下手机，活动一下眼睛和身体吧</div><div class="sts"><div class="st"><div class="sn">${mins}</div><div class="sl">专注分钟</div></div><div class="st"><div class="sn">${rc}</div><div class="sl">提醒次数</div></div><div class="st"><div class="sn">${fc}</div><div class="sl">完成提醒</div></div></div><div class="das"><button class="bm" onclick="rst()">返回首页</button><button class="bs" onclick="ext(5)">再延长 5 分钟</button></div>`, false);
+  }
+  show('s2');
+}
+
+function ext(m){ cxn(); tot+=m*60; rem+=m*60; pausedMs=0; t0=Date.now(); fired=pts().map(()=>false); bpd(); document.getElementById('ab').innerHTML=''; show('s1'); aa('info','⏳','已延长 '+m+' 分钟，继续加油！'); wakeOn(); schn(); if(!iv){tick(); iv=setInterval(tick,500);} }
+
+function rst(){ cxn(); clearInterval(iv); iv=null; wakeOff(); rem=0; paused=false; document.getElementById('gi').value=''; document.getElementById('mi').value=''; chk(); show('s0'); }
+
+function schn(){
+  if(Notification.permission!=='granted') return;
+  cxn(); const now=Date.now(), elapsed=(now-t0-pausedMs);
+  pts().forEach((p,i)=>{
+    if(fired[i]) return;
+    const fireAt=tot*(p/100)*1000; const delay=Math.max(0, fireAt-elapsed);
+    const tid=setTimeout(()=>{
+      if(p===100){ new Notification('⏰ 时间到啦',{body:'「'+goal+'」的时间已用完',tag:'fe'}); }
+      else { const l=fmt(Math.round(tot*(1-p/100))); new Notification('⏱ 时间提醒',{body:'已过'+p+'%，还剩'+l+'，目标：'+goal,tag:'f'+p}); }
+    },delay);
+    ntids.push(tid);
+  });
+}
+function cxn(){ ntids.forEach(clearTimeout); ntids=[]; }
+
+let wl=null;
+async function wakeOn(){ if('wakeLock' in navigator){ try{ wl=await navigator.wakeLock.request('screen'); }catch(e){console.warn('Wake Lock failed');} } }
+function wakeOff(){ if(wl){wl.release();wl=null;} }
+// 修复系统清理内存导致锁屏失效的问题，可见性恢复时重新请求
+document.addEventListener('visibilitychange',()=>{ 
+  if(!document.hidden&&iv&&!paused){ 
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    wakeOn(); 
+    schn(); 
+  } 
+});
+
+let lis=false, rec=null;
+function tv(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){document.getElementById('vh').textContent='该浏览器不支持语音，请手动输入';return;}
+  if(lis){rec&&rec.stop();return;}
+  rec=new SR(); rec.lang='zh-CN'; rec.interimResults=false;
+  rec.onstart=()=>{lis=true;document.getElementById('vb').classList.add('on');document.getElementById('vh').textContent='正在听…';};
+  rec.onend=()=>{lis=false;document.getElementById('vb').classList.remove('on');document.getElementById('vh').textContent='说「买早餐 5分钟」';};
+  rec.onresult=e=>{
+    const t=e.results[0][0].transcript; const m=t.match(/(\d+)\s*分钟/);
+    if(m){ document.getElementById('mi').value=m[1]; document.getElementById('gi').value=t.replace(/\d+\s*分钟/,'').replace(/[，,。.！!？?]/g,'').trim(); }
+    else document.getElementById('gi').value=t.replace(/[，,。.！!？?]/g,'').trim();
+    chk();
+  };
+  rec.onerror=()=>{document.getElementById('vh').textContent='识别失败，请重试';}; rec.start();
+}
+
+function fmt(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
+function mk(tag,cls){ const e=document.createElement(tag); e.className=cls; return e; }
+function aa(type,icon,msg){ const b=document.getElementById('ab'); const d=mk('div','al '+type); d.innerHTML=`<span class="ai">${icon}</span><span>${msg}</span>`; b.insertBefore(d,b.firstChild); while(b.children.length>3) b.removeChild(b.lastChild); }
+function dcard(html,ex){ const c=document.getElementById('dc'); c.className='dc'+(ex?' ex':''); c.innerHTML=html; }
+function vib(p){ if(navigator.vibrate) navigator.vibrate(p); }
+function beep(f,v,t){
+  if(!audioCtx) return;
+  try{
+    const tone=d=>{
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type='sine'; o.frequency.value=f;
+      g.gain.setValueAtTime(0,audioCtx.currentTime+d); g.gain.linearRampToValueAtTime(v,audioCtx.currentTime+d+.05); g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+d+.35);
+      o.connect(g); g.connect(audioCtx.destination); o.start(audioCtx.currentTime+d); o.stop(audioCtx.currentTime+d+.4);
+    };
+    tone(0); if(t){tone(.45);tone(.9);}
+  }catch(e){}
+}
+</script>
+</body>
+</html>
